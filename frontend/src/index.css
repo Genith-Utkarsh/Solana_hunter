@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #050505;
+    color: #e5e2e1;
+    overflow-x: hidden;
+    font-family: 'Geist', sans-serif;
+  }
+}
+
+/* Cyberpunk System Glows */
+.system-glow {
+  box-shadow: 0 0 15px rgba(20, 241, 149, 0.15);
+}
+
+.system-glow-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.system-glow-hover:hover {
+  box-shadow: 0 0 20px rgba(20, 241, 149, 0.35), inset 0 0 10px rgba(20, 241, 149, 0.1);
+  border-color: #14f195 !important;
+}
+
+.secondary-glow-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.secondary-glow-hover:hover {
+  box-shadow: 0 0 20px rgba(216, 185, 255, 0.35), inset 0 0 10px rgba(216, 185, 255, 0.1);
+  border-color: #d8b9ff !important;
+}
+
+.system-border {
+  border: 1px solid rgba(20, 241, 149, 0.25);
+}
+
+.mana-pulse {
+  transition: all 0.3s ease;
+}
+
+.mana-pulse:focus-within {
+  box-shadow: 0 0 15px rgba(20, 241, 149, 0.4);
+  border-color: #14f195 !important;
+}
+
+.progress-gradient {
+  background: linear-gradient(90deg, #d8b9ff 0%, #14f195 100%);
+}
+
+/* Scanline Overlay (Cyberpunk feel) */
+.scanline {
+  position: relative;
+}
+
+.scanline::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.15) 51%);
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Scrollbar Tweaks */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a352e;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #14f195;
+}
+
+/* Utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Shimmer animation for XP bar */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.shimmer-anim {
+  animation: shimmer 2s infinite;
+}
+
+/* Fade In animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-active {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

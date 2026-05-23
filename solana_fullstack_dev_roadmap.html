@@ -1,0 +1,305 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  .container { padding: 1.5rem 0; }
+  .top-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .top-bar h2 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .phase-btn { font-size: 12px; padding: 5px 12px; border-radius: 999px; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-secondary); cursor: pointer; transition: all 0.15s; }
+  .phase-btn.active { border-color: transparent; color: #fff; }
+  .phase-btn[data-phase="0"].active  { background: #534AB7; }
+  .phase-btn[data-phase="1"].active  { background: #185FA5; }
+  .phase-btn[data-phase="2"].active  { background: #0F6E56; }
+  .phase-btn[data-phase="3"].active  { background: #BA7517; }
+  .phase-btn[data-phase="4"].active  { background: #993C1D; }
+  .phase-btn[data-phase="5"].active  { background: #993556; }
+  .phase-btn[data-phase="all"].active { background: #3C3489; }
+  .progress-bar { height: 6px; border-radius: 999px; background: var(--color-background-secondary); margin-bottom: 1.5rem; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #534AB7, #1D9E75); transition: width 0.4s; }
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; margin-bottom: 1.5rem; }
+  .stat-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px; text-align: center; }
+  .stat-card .num { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+  .stat-card .lbl { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+  .levels-grid { display: flex; flex-direction: column; gap: 6px; }
+  .level-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; cursor: pointer; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .level-card:hover { border-color: var(--color-border-secondary); background: var(--color-background-secondary); }
+  .level-card.done { opacity: 0.6; }
+  .level-card.expanded { border-color: var(--color-border-primary); }
+  .level-num { font-size: 11px; font-weight: 500; min-width: 32px; padding: 3px 6px; border-radius: 4px; text-align: center; }
+  .level-main { flex: 1; }
+  .level-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+  .level-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+  .level-tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; }
+  .level-detail { margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--color-border-tertiary); display: none; }
+  .level-detail.open { display: block; }
+  .detail-section { margin-bottom: 8px; }
+  .detail-section .ds-title { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .detail-section ul { list-style: none; padding: 0; }
+  .detail-section ul li { font-size: 13px; color: var(--color-text-primary); padding: 2px 0 2px 16px; position: relative; }
+  .detail-section ul li::before { content: '→'; position: absolute; left: 0; color: var(--color-text-secondary); font-size: 11px; top: 3px; }
+  .checkbox { width: 18px; height: 18px; border: 0.5px solid var(--color-border-secondary); border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; cursor: pointer; background: var(--color-background-secondary); }
+  .checkbox.checked { background: #534AB7; border-color: #534AB7; color: #fff; font-size: 11px; }
+  .ask-btn { margin-top: 8px; font-size: 12px; padding: 5px 10px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+  .ask-btn:hover { background: var(--color-background-secondary); }
+  .section-header { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); padding: 8px 0 4px; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .phase-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .search-input { width: 100%; padding: 8px 12px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); font-size: 13px; margin-bottom: 1rem; }
+</style>
+<div class="container">
+  <h2 style="sr-only">Solana Fullstack Developer Roadmap — 100 Levels</h2>
+  <div class="top-bar">
+    <div>
+      <div style="font-size: 22px; font-weight: 500; color: var(--color-text-primary);">Solana Fullstack Roadmap</div>
+      <div style="font-size: 13px; color: var(--color-text-secondary); margin-top: 2px;">100 levels · from zero to job-ready</div>
+    </div>
+  </div>
+
+  <div class="stats-row" id="stats"></div>
+
+  <div class="progress-bar"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+
+  <input class="search-input" id="search" placeholder="Search levels by title or topic..." />
+
+  <div class="filter-row" style="margin-bottom:1rem">
+    <button class="phase-btn active" data-phase="all">All 100</button>
+    <button class="phase-btn" data-phase="0">Phase 1</button>
+    <button class="phase-btn" data-phase="1">Phase 2</button>
+    <button class="phase-btn" data-phase="2">Phase 3</button>
+    <button class="phase-btn" data-phase="3">Phase 4</button>
+    <button class="phase-btn" data-phase="4">Phase 5</button>
+    <button class="phase-btn" data-phase="5">Phase 6</button>
+  </div>
+
+  <div class="levels-grid" id="levels"></div>
+</div>
+
+<script>
+const PHASES = [
+  { name: "Phase 1 — Foundations", color: "#534AB7", bg: "#EEEDFE", text: "#3C3489", dot: "#534AB7" },
+  { name: "Phase 2 — Fullstack Web Dev", color: "#185FA5", bg: "#E6F1FB", text: "#0C447C", dot: "#185FA5" },
+  { name: "Phase 3 — Web3 Fundamentals", color: "#0F6E56", bg: "#E1F5EE", text: "#085041", dot: "#0F6E56" },
+  { name: "Phase 4 — Solana Core Dev", color: "#BA7517", bg: "#FAEEDA", text: "#633806", dot: "#BA7517" },
+  { name: "Phase 5 — Advanced Solana", color: "#993C1D", bg: "#FAECE7", text: "#4A1B0C", dot: "#993C1D" },
+  { name: "Phase 6 — Job Ready & Expert", color: "#993556", bg: "#FBEAF0", text: "#4B1528", dot: "#993556" },
+];
+
+const LEVELS = [
+  // Phase 1 — Foundations (0–16)
+  { id:0,  phase:0, title:"How computers & the internet work", sub:"HTTP, DNS, TCP/IP, browsers", skills:["Understand client-server model","HTTP request/response cycle","What DNS does","How browsers render pages"], resources:["CS50 Intro (YouTube)","MDN: How the web works"] },
+  { id:1,  phase:0, title:"Terminal & command line basics", sub:"bash, file system, navigation", skills:["Navigate directories","Create/delete files","Run scripts","Use pipes and redirects"], resources:["The Odin Project CLI module","Missing Semester (MIT)"] },
+  { id:2,  phase:0, title:"Git & version control", sub:"commits, branches, GitHub", skills:["git init, add, commit, push","Branching and merging","Pull requests","Resolving conflicts"], resources:["Pro Git book (free)","GitHub Docs"] },
+  { id:3,  phase:0, title:"HTML fundamentals", sub:"semantic markup, forms, structure", skills:["Semantic tags: header, nav, main, footer","Forms and inputs","Tables","Accessibility basics"], resources:["MDN HTML Guide","freeCodeCamp HTML cert"] },
+  { id:4,  phase:0, title:"CSS fundamentals", sub:"box model, selectors, layouts", skills:["Box model","Flexbox","Grid","Responsive design with media queries"], resources:["CSS Tricks — Flexbox/Grid guide","Kevin Powell YouTube"] },
+  { id:5,  phase:0, title:"JavaScript basics", sub:"variables, functions, DOM", skills:["Variables, types, operators","Functions and scope","DOM manipulation","Events and listeners"], resources:["javascript.info","Eloquent JavaScript (free)"] },
+  { id:6,  phase:0, title:"JavaScript intermediate", sub:"async, ES6+, fetch API", skills:["Promises and async/await","Arrow functions, destructuring","Modules (import/export)","Fetch API & JSON"], resources:["javascript.info async chapter","Kyle Simpson — You Don't Know JS"] },
+  { id:7,  phase:0, title:"TypeScript fundamentals", sub:"types, interfaces, generics", skills:["Type annotations","Interfaces vs types","Generics","tsconfig setup"], resources:["TypeScript official docs","Matt Pocock Total TypeScript"] },
+  { id:8,  phase:0, title:"Node.js basics", sub:"runtime, modules, npm", skills:["How Node works","CommonJS vs ES modules","npm / pnpm / yarn","Building a basic HTTP server"], resources:["Node.js official docs","Fireship Node crash course"] },
+  { id:9,  phase:0, title:"Package management & tooling", sub:"npm, pnpm, bundlers", skills:["package.json deep dive","Semantic versioning","Vite / esbuild basics","Environment variables"], resources:["Vite docs","npmjs.com"] },
+  { id:10, phase:0, title:"Data structures & algorithms basics", sub:"arrays, objects, Big-O", skills:["Arrays, stacks, queues, maps","Big-O notation basics","Sorting: bubble, merge, quick","Recursion patterns"], resources:["NeetCode roadmap (easy)","freeCodeCamp DSA cert"] },
+  { id:11, phase:0, title:"How databases work", sub:"SQL, relational concepts", skills:["Tables, rows, columns","SELECT, INSERT, UPDATE, DELETE","JOINs","Indexes and performance basics"], resources:["SQLBolt (free interactive)","PostgreSQL tutorial"] },
+  { id:12, phase:0, title:"REST APIs — consuming & building", sub:"HTTP verbs, JSON, Postman", skills:["CRUD over REST","Status codes","Postman / Thunder Client","Error handling in APIs"], resources:["RESTful API Design (MDN)","Postman learning center"] },
+  { id:13, phase:0, title:"Linux & server basics", sub:"processes, permissions, SSH", skills:["File permissions (chmod)","Process management","SSH into a server","Environment variables in Linux"], resources:["The Odin Project — Linux","DigitalOcean Linux tutorials"] },
+  { id:14, phase:0, title:"Cryptography basics", sub:"hashing, keys, signatures", skills:["Hashing (SHA-256)","Symmetric vs asymmetric encryption","Public/private key pairs","What a digital signature is"], resources:["Computerphile crypto videos","Khan Academy cryptography"] },
+  { id:15, phase:0, title:"How the web security model works", sub:"CORS, cookies, auth basics", skills:["CORS and preflight","Cookie vs token auth","XSS and CSRF basics","HTTPS and TLS"], resources:["OWASP Top 10 (basics)","MDN Security docs"] },
+  { id:16, phase:0, title:"Soft skills & developer workflow", sub:"debugging, googling, reading docs", skills:["How to read error messages","Effective googling","Reading official docs","Rubber duck debugging"], resources:["The Debugging Book (free)","How to ask good questions (Stack Overflow guide)"] },
+
+  // Phase 2 — Fullstack Web Dev (17–39)
+  { id:17, phase:1, title:"React fundamentals", sub:"components, props, state", skills:["JSX syntax","Functional components","useState and useEffect","Props and component trees"], resources:["React official docs (new)","Scrimba React course"] },
+  { id:18, phase:1, title:"React intermediate", sub:"context, custom hooks, patterns", skills:["useContext","Custom hooks","React.memo and optimization","Compound components pattern"], resources:["React docs deep dives","Jack Herrington hooks series"] },
+  { id:19, phase:1, title:"Next.js fundamentals", sub:"routing, SSR, SSG, API routes", skills:["File-based routing (App Router)","Server vs client components","API routes","Metadata and SEO"], resources:["Next.js official docs","Lee Robinson Next.js course"] },
+  { id:20, phase:1, title:"Next.js advanced", sub:"middleware, auth, deployment", skills:["Middleware","Authentication with NextAuth / Clerk","Image optimization","Deploying to Vercel"], resources:["Vercel docs","Next.js with Auth tutorial"] },
+  { id:21, phase:1, title:"Tailwind CSS", sub:"utility-first design system", skills:["Core utilities","Responsive prefixes","Dark mode","Custom theme in tailwind.config"], resources:["Tailwind CSS docs","Tailwind UI examples"] },
+  { id:22, phase:1, title:"State management", sub:"Zustand, Redux Toolkit, Jotai", skills:["Zustand store setup","Slice pattern (RTK)","Persist middleware","When to use global state"], resources:["Zustand README","Redux Toolkit docs"] },
+  { id:23, phase:1, title:"Forms & validation", sub:"React Hook Form, Zod", skills:["useForm hook","Zod schema validation","Error messages","File upload handling"], resources:["React Hook Form docs","Zod docs"] },
+  { id:24, phase:1, title:"Backend with Express.js", sub:"routing, middleware, REST", skills:["Express router","Request/response lifecycle","Middleware chain","Error handling middleware"], resources:["Express.js docs","The Odin Project backend"] },
+  { id:25, phase:1, title:"Authentication & authorization", sub:"JWT, sessions, OAuth", skills:["JWT signing and verification","Session vs token auth","OAuth 2.0 / social login","Role-based access control"], resources:["Auth0 docs","Jose library (JWTs)"] },
+  { id:26, phase:1, title:"PostgreSQL & Prisma ORM", sub:"schema, queries, migrations", skills:["Prisma schema definition","CRUD with Prisma client","Migrations","Relations (one-to-many, many-to-many)"], resources:["Prisma docs","Prisma crash course (Fireship)"] },
+  { id:27, phase:1, title:"MongoDB & Mongoose", sub:"documents, schemas, aggregation", skills:["Document model vs relational","Mongoose schema & models","Aggregation pipeline","Indexing in MongoDB"], resources:["MongoDB University (free)","Mongoose docs"] },
+  { id:28, phase:1, title:"Redis & caching", sub:"key-value store, sessions, pub/sub", skills:["Redis data types","Caching strategies","Session storage","Pub/sub basics"], resources:["Redis University (free)","Upstash Redis docs"] },
+  { id:29, phase:1, title:"File storage & CDN", sub:"S3, Cloudflare R2, uploads", skills:["Presigned URLs","Multipart uploads","CDN fundamentals","Image optimization pipeline"], resources:["AWS S3 docs","Cloudflare R2 docs"] },
+  { id:30, phase:1, title:"WebSockets & real-time", sub:"Socket.io, SSE, live updates", skills:["WebSocket handshake","Socket.io rooms & namespaces","Server-Sent Events","Building a live feed"], resources:["Socket.io docs","Fireship WebSocket video"] },
+  { id:31, phase:1, title:"tRPC & type-safe APIs", sub:"end-to-end typesafety", skills:["Router and procedures","Input validation with Zod","React Query integration","Context and middleware"], resources:["tRPC docs","T3 stack guide"] },
+  { id:32, phase:1, title:"GraphQL basics", sub:"schema, resolvers, queries", skills:["Schema definition language","Queries, mutations, subscriptions","Apollo Server","Apollo Client in React"], resources:["GraphQL.org learn","Apollo docs"] },
+  { id:33, phase:1, title:"Testing fundamentals", sub:"unit, integration, e2e", skills:["Vitest / Jest unit tests","React Testing Library","Playwright e2e tests","Test coverage basics"], resources:["Vitest docs","Playwright docs"] },
+  { id:34, phase:1, title:"Docker & containerization", sub:"images, containers, compose", skills:["Dockerfile basics","docker-compose for local dev","Multi-stage builds","Container networking"], resources:["Play with Docker","Fireship Docker 100s video"] },
+  { id:35, phase:1, title:"CI/CD pipelines", sub:"GitHub Actions, auto-deploy", skills:["GitHub Actions workflows","Run tests on PR","Auto-deploy to Vercel/Fly.io","Environment secrets"], resources:["GitHub Actions docs","Fireship CI/CD video"] },
+  { id:36, phase:1, title:"Cloud deployment", sub:"Vercel, Railway, Fly.io", skills:["Deploying Next.js","Deploying Express APIs","Environment variables in prod","Domain & DNS setup"], resources:["Vercel docs","Railway docs"] },
+  { id:37, phase:1, title:"Monitoring & observability", sub:"logs, errors, performance", skills:["Sentry error tracking","Axiom / Datadog logs","Core Web Vitals","Alerting basics"], resources:["Sentry docs","Vercel Analytics"] },
+  { id:38, phase:1, title:"Build a fullstack project #1", sub:"end-to-end CRUD app", skills:["Design schema first","Build REST + Next.js","Add auth","Deploy and share"], resources:["Build in public on GitHub","Get feedback on Discord"] },
+  { id:39, phase:1, title:"Build a fullstack project #2", sub:"real-time or AI-powered app", skills:["WebSocket or SSE feature","OpenAI or other LLM API","Payments with Stripe","Production monitoring setup"], resources:["Stripe docs","Vercel AI SDK"] },
+
+  // Phase 3 — Web3 Fundamentals (40–54)
+  { id:40, phase:2, title:"Blockchain fundamentals", sub:"consensus, blocks, nodes", skills:["How a blockchain works","Proof of Work vs Proof of Stake","Nodes and validators","Finality and forks"], resources:["Andrej Karpathy tokenizer (concepts)","Bitcoin whitepaper simplified"] },
+  { id:41, phase:2, title:"Wallets & key management", sub:"seed phrases, keypairs, HD wallets", skills:["Public/private key pairs","Seed phrase (BIP-39)","Hot vs cold wallets","Signing transactions locally"], resources:["Solana docs — keypairs","Phantom wallet docs"] },
+  { id:42, phase:2, title:"Tokens & NFTs conceptually", sub:"fungible, non-fungible, metadata", skills:["What makes a token fungible","NFT standards (ERC-721 concept)","Token metadata schemas","Royalties and marketplaces"], resources:["OpenSea NFT Bible","Metaplex docs intro"] },
+  { id:43, phase:2, title:"DeFi fundamentals", sub:"AMMs, liquidity, lending", skills:["AMM curve (x*y=k)","Liquidity pools and impermanent loss","Lending protocols basics","Yield farming concepts"], resources:["Finematics YouTube","Uniswap v3 whitepaper (skim)"] },
+  { id:44, phase:2, title:"Web3 UX patterns", sub:"connect wallet, sign, confirm", skills:["Wallet adapter patterns","Signing vs sending transactions","Gas/fee UX","Transaction feedback states"], resources:["Solana wallet adapter docs","Rainbow Kit (concept)"] },
+  { id:45, phase:2, title:"Solana overview & architecture", sub:"PoH, Sealevel, Gulf Stream", skills:["Proof of History explained","Parallel transaction processing","Account model (not UTXO)","Solana vs Ethereum model"], resources:["Solana docs — architecture","Anatoly's original whitepaper"] },
+  { id:46, phase:2, title:"Solana accounts model", sub:"accounts, lamports, data layout", skills:["Every account has an owner program","Lamports (SOL units)","Account rent and rent-exempt","System program vs custom programs"], resources:["Solana docs — accounts","Paulx Solana blog posts"] },
+  { id:47, phase:2, title:"Solana transactions & instructions", sub:"signers, versioned txs", skills:["Transaction structure","Instructions vs transactions","Signers and fee payers","Versioned transactions (v0)"], resources:["Solana cookbook","Solana docs — transactions"] },
+  { id:48, phase:2, title:"Solana CLI & local validator", sub:"solana-cli, test-validator, airdrops", skills:["Install solana-cli","Run solana-test-validator","Airdrop on devnet","Generate and manage keypairs with CLI"], resources:["Solana CLI docs","Alchemy Solana guides"] },
+  { id:49, phase:2, title:"web3.js / solana/web3.js basics", sub:"connecting, fetching, sending", skills:["Connection to RPC endpoint","Fetch account info","Build and send transactions","Keypair generation in JS"], resources:["@solana/web3.js v2 docs","Solana cookbook JS section"] },
+  { id:50, phase:2, title:"@solana/kit (web3.js v2)", sub:"new API patterns, codecs", skills:["New address/key types","Pipe-based transaction building","Codecs and serialization","Compatibility with v1"], resources:["solana/kit GitHub","Anza migration guide"] },
+  { id:51, phase:2, title:"Solana wallet adapter in React", sub:"connect button, signing in UI", skills:["WalletAdapterProvider setup","useWallet hook","Sign a message","Send SOL from UI"], resources:["Solana wallet-adapter docs","solana-labs/wallet-adapter GitHub"] },
+  { id:52, phase:2, title:"Solana token program (SPL)", sub:"mint, token accounts, transfers", skills:["Mint account vs token account","Creating a mint","Minting tokens","Transferring SPL tokens"], resources:["SPL token docs","Solana cookbook — tokens"] },
+  { id:53, phase:2, title:"Metaplex & NFT creation", sub:"Umi, Candy Machine, metadata", skills:["Metaplex Umi framework","Create a Fungible or NFT","Upload metadata to Arweave/IPFS","Candy Machine v3 basics"], resources:["Metaplex docs","Metaplex Umi guide"] },
+  { id:54, phase:2, title:"RPC, explorers & devnet workflow", sub:"Helius, Explorer, rate limits", skills:["Devnet vs mainnet-beta","Helius / QuickNode RPC usage","Solana Explorer usage","Rate limiting and webhooks"], resources:["Helius docs","SolanaFM Explorer"] },
+
+  // Phase 4 — Solana Core Dev / Rust & Anchor (55–74)
+  { id:55, phase:3, title:"Rust fundamentals — syntax", sub:"ownership, types, functions", skills:["Variables and mutability","Ownership and borrowing","Structs and enums","Functions and closures"], resources:["The Rust Book (free online)","Rustlings exercises"] },
+  { id:56, phase:3, title:"Rust intermediate", sub:"traits, generics, error handling", skills:["Traits and impl blocks","Generics","Result and Option","Pattern matching (match)"], resources:["The Rust Book ch 10-18","Rust by Example (free)"] },
+  { id:57, phase:3, title:"Rust — collections & iterators", sub:"Vec, HashMap, iterators", skills:["Vec, HashMap, HashSet","Iterator adapters (map, filter, fold)","String vs &str","Lifetimes basics"], resources:["The Rust Book ch 8, 13","Jon Gjengset — Rust streams"] },
+  { id:58, phase:3, title:"Rust — serialization & unsafe basics", sub:"serde, borsh, unsafe intro", skills:["Serde derive macros","Borsh serialization (used in Solana)","When unsafe is needed","Raw pointers (conceptual)"], resources:["Serde docs","Borsh spec"] },
+  { id:59, phase:3, title:"Solana native program basics", sub:"entrypoint, process_instruction", skills:["Program entrypoint","AccountInfo struct","How programs read account data","Returning errors with ProgramError"], resources:["Solana Program Library source","Solana cookbook — programs"] },
+  { id:60, phase:3, title:"Anchor framework intro", sub:"IDL, macros, workspace", skills:["anchor init workspace","#[program] and #[account] macros","IDL generation","Client-side from IDL"], resources:["Anchor docs","Coral Anchor book"] },
+  { id:61, phase:3, title:"Anchor — accounts & constraints", sub:"init, seeds, space, has_one", skills:["Account init with space","Seeds and bump (PDAs)","#[account(has_one = ...)]","#[account(mut, close = ...)]"], resources:["Anchor account constraints docs","Paulx Anchor deep dive"] },
+  { id:62, phase:3, title:"Program Derived Addresses (PDAs)", sub:"seeds, bump, canonical bump", skills:["How PDAs are computed","findProgramAddressSync in JS","createProgramAddressSync","Signing with PDAs in programs"], resources:["Solana PDA guide","Coral Anchor PDA examples"] },
+  { id:63, phase:3, title:"Cross Program Invocations (CPIs)", sub:"invoke, invoke_signed, CPI guard", skills:["invoke vs invoke_signed","Passing accounts in CPI","Signer seeds for PDA signing","CPI guard (Solana 1.16+)"], resources:["Solana docs — CPI","Anchor CPI examples"] },
+  { id:64, phase:3, title:"Build: Counter / Voting program", sub:"first end-to-end Anchor program", skills:["Initialize state account","Increment/vote instruction","Emit events","Test with Anchor.toml validator"], resources:["Anchor examples repo","Buildspace Solana bootcamp"] },
+  { id:65, phase:3, title:"Anchor testing with Mocha/Bankrun", sub:"unit tests for programs", skills:["Anchor test setup","bankrun for fast local tests","Mock accounts","Assert on-chain state"], resources:["solana-bankrun docs","Anchor testing docs"] },
+  { id:66, phase:3, title:"Token program CPIs in Anchor", sub:"mint, transfer, burn via CPI", skills:["spl-token CPI in Anchor","anchor-spl crate usage","Token account creation in program","Transfer with program-owned accounts"], resources:["anchor-spl docs","Solana cookbook token CPIs"] },
+  { id:67, phase:3, title:"Metaplex in Anchor programs", sub:"NFT mint via program", skills:["mpl-token-metadata CPI","Create metadata account","Master edition","Update authority management"], resources:["Metaplex — Anchor examples","mpl-token-metadata crate docs"] },
+  { id:68, phase:3, title:"Build: Escrow / Swap program", sub:"atomic asset exchange", skills:["Maker/taker pattern","Escrow vault with PDA","Token transfer in escrow","Closing accounts and reclaiming rent"], resources:["Anchor escrow tutorial (Paulx)","Tiny DEX examples on GitHub"] },
+  { id:69, phase:3, title:"Build: Staking program", sub:"lock tokens, earn rewards", skills:["Stake account data layout","Time-based reward calculation","Unstake and reward payout","Fee parameters in state"], resources:["Armani Ferrante staking example","Anchor cookbook"] },
+  { id:70, phase:3, title:"Solana program security basics", sub:"common vulnerabilities", skills:["Signer check vulnerabilities","Owner check vulnerabilities","Account data matching","Integer overflow / underflow"], resources:["Coral security guide","Neodyme blog — Solana exploits"] },
+  { id:71, phase:3, title:"Compute units & optimization", sub:"CU budgets, logging, profiling", skills:["SetComputeUnitLimit instruction","Anchor compute logging","Reduce CU with efficient data","Avoiding unnecessary account reads"], resources:["Helius CU guide","Solana docs — fees"] },
+  { id:72, phase:3, title:"Versioned transactions & ALTs", sub:"address lookup tables, v0 tx", skills:["Why ALTs exist","Creating and extending ALTs","Using ALTs in v0 transactions","ALT lifecycle management"], resources:["Solana docs — ALTs","Helius ALT guide"] },
+  { id:73, phase:3, title:"Solana events & logging", sub:"emit!, program logs, indexing", skills:["emit! macro in Anchor","Parsing logs client-side","CPI event bubbling","Websocket subscription to logs"], resources:["Anchor emit docs","web3.js logsSubscribe"] },
+  { id:74, phase:3, title:"Build: Full dApp — frontend + program", sub:"end-to-end Anchor + Next.js", skills:["Anchor IDL → TypeScript types","React wallet adapter integration","Send program instructions from UI","Display on-chain data in real time"], resources:["Buildspace Solana dApp","Nick's Anchor + Next.js template"] },
+
+  // Phase 5 — Advanced Solana (75–89)
+  { id:75, phase:4, title:"Solana program architecture patterns", sub:"state compression, accounts design", skills:["Account size and cost planning","Sharding state with sub-accounts","Ring buffers / circular accounts","Upgrade authority management"], resources:["Anchor patterns repo","Solana Program Library source"] },
+  { id:76, phase:4, title:"State compression & cNFTs", sub:"concurrent merkle trees, Bubblegum", skills:["What state compression solves","Concurrent Merkle Trees","Metaplex Bubblegum program","Mint and transfer cNFTs"], resources:["Metaplex Bubblegum docs","Helius cNFT guide"] },
+  { id:77, phase:4, title:"Token-2022 & token extensions", sub:"transfer fees, metadata ext, more", skills:["Token-2022 program vs legacy","Transfer hook extension","Confidential transfers (concept)","Metadata pointer extension"], resources:["Solana Token-2022 docs","spl-token-2022 crate"] },
+  { id:78, phase:4, title:"Solana pay & blinks", sub:"payment URLs, actions protocol", skills:["Solana Pay QR protocol","Actions JSON spec","Blink URLs and clients","Building an Action endpoint"], resources:["Solana Pay docs","Solana Actions spec (GitHub)"] },
+  { id:79, phase:4, title:"DeFi protocols on Solana", sub:"Raydium, Orca, Jupiter CPIs", skills:["Jupiter v6 swap API","Raydium CLMM CPI (concept)","Orca Whirlpool SDK","Route optimization concepts"], resources:["Jupiter docs","Orca Whirlpool SDK docs"] },
+  { id:80, phase:4, title:"Oracles — Pyth & Switchboard", sub:"price feeds, on-demand data", skills:["What oracles solve","Pyth price account structure","Switchboard on-demand feeds","Oracle staleness checks in programs"], resources:["Pyth docs","Switchboard docs"] },
+  { id:81, phase:4, title:"Indexing — Helius DAS & Geyser", sub:"real-time data, webhooks, DAS API", skills:["Digital Asset Standard API","Helius webhooks setup","Geyser plugin concept","Building an event-driven backend"], resources:["Helius DAS docs","Yellowstone Geyser plugin"] },
+  { id:82, phase:4, title:"Solana validator & network internals", sub:"slots, epochs, leaders, vote program", skills:["Slot vs block","Leader schedule","Vote accounts and stake","Epoch boundary effects on programs"], resources:["Solana validator docs","Jito Labs research posts"] },
+  { id:83, phase:4, title:"MEV & Jito on Solana", sub:"bundles, tips, block engine", skills:["What MEV means on Solana","Jito tip accounts","Building Jito bundles","Sandwich / arbitrage basics"], resources:["Jito docs","0xIchigo MEV resources"] },
+  { id:84, phase:4, title:"Security deep dive", sub:"audit methodology, fuzz testing", skills:["Audit checklist (Neodyme/OtterSec)","Fuzzing with trident","Formal verification basics","Writing invariant tests"], resources:["Trident fuzzer docs","OtterSec audit reports (public)"] },
+  { id:85, phase:4, title:"ZK compression on Solana", sub:"light protocol, compressed accounts", skills:["ZK compression concept","Light Protocol architecture","Compressed token accounts","Trade-offs vs state compression"], resources:["Light Protocol docs","ZK compression whitepaper"] },
+  { id:86, phase:4, title:"Program upgrades & governance", sub:"upgrade authority, multisig, DAO", skills:["Upgradeable BPF programs","Squads multisig for upgrade authority","SPL Governance basics","Emergency upgrade patterns"], resources:["Squads docs","SPL Governance docs"] },
+  { id:87, phase:4, title:"Solana mobile — Saga MWA", sub:"Mobile Wallet Adapter, seed vault", skills:["Mobile Wallet Adapter protocol","React Native + Solana","Seed Vault security model","Publishing to dApp Store"], resources:["Solana Mobile docs","MWA spec GitHub"] },
+  { id:88, phase:4, title:"Advanced frontend patterns", sub:"optimistic UI, retry logic, tx confirm", sub:"optimistic updates, prefetch, caching", skills:["Optimistic UI for on-chain writes","Transaction confirmation strategies","Prefetching account data","React Query + Solana patterns"], resources:["Tanstack Query docs","Solana web3.js confirmTransaction"] },
+  { id:89, phase:4, title:"Build: DeFi protocol (mini)", sub:"AMM or lending pool", skills:["AMM constant product formula","Liquidity token math","Liquidation logic","Frontend LP dashboard"], resources:["Tiny AMM Solana tutorial","Anchor DeFi examples GitHub"] },
+
+  // Phase 6 — Job Ready & Expert (90–99)
+  { id:90, phase:5, title:"Open source contributions", sub:"PRs to Anchor, SPL, Metaplex", skills:["Read CONTRIBUTING.md","Fix docs issues first","Pick good-first-issues","Code review etiquette"], resources:["Anchor GitHub issues","Metaplex GitHub issues"] },
+  { id:91, phase:5, title:"Build a production dApp", sub:"full lifecycle from idea to launch", skills:["Product scoping and MVP","Smart contract design doc","Security checklist pre-launch","Marketing in Web3 communities"], resources:["Indie Hackers","Lamport DAO community"] },
+  { id:92, phase:5, title:"Smart contract auditing basics", sub:"find and report vulnerabilities", skills:["Read other protocols' code","Use Trident fuzz tests","Write a basic audit report","Understand CVSS scoring"], resources:["Code4rena contests","Sherlock audit contests"] },
+  { id:93, phase:5, title:"Protocol design & tokenomics", sub:"economic modeling, incentives", skills:["Token supply and emission design","Vesting schedules","ve-token governance","Simulation with spreadsheets"], resources:["Tokenomics design guide","Messari research reports"] },
+  { id:94, phase:5, title:"Technical writing & documentation", sub:"README, guides, API docs", skills:["Write clear READMEs","Build a docs site (Docusaurus)","Document your IDL","Write tutorials for devs"], resources:["Docusaurus docs","Google developer documentation guide"] },
+  { id:95, phase:5, title:"Developer experience (DevX)", sub:"SDKs, CLIs, templates", skills:["Build an npm SDK over your program","CLI tooling with oclif or commander","Scaffold templates","Publish and version your SDK"], resources:["oclif docs","npm publishing guide"] },
+  { id:96, phase:5, title:"Portfolio & personal brand", sub:"GitHub, Twitter/X, blog", skills:["Curate GitHub profile README","Write 3 dev blog posts","Build in public on X","Record a project demo video"], resources:["Hashnode / Dev.to","GitHub profile README guide"] },
+  { id:97, phase:5, title:"Interview preparation", sub:"system design, coding, take-homes", skills:["Solana system design questions","Live coding in Rust/TS","Smart contract review exercises","Explain your projects clearly"], resources:["LeetCode easy/medium (JS)","Solana interview questions list (GitHub)"] },
+  { id:98, phase:5, title:"Hackathon strategy", sub:"win hackathons, build fast", skills:["Pick the right track","Scope aggressively for 2-3 days","Ship a working demo","Write a compelling submission"], resources:["Colosseum (Solana hackathons)","Superteam Discord"] },
+  { id:99, phase:5, title:"You are job-ready 🎯", sub:"fullstack + Solana engineer", skills:["Apply to Solana ecosystem jobs","Superteam Earn bounties","Reach out to protocol teams","Keep building — never stop"], resources:["Solana Jobs board","Superteam Earn","Lamport DAO","ecosystem.solana.com"] },
+];
+
+let done = new Set(JSON.parse(localStorage.getItem('sol_done') || '[]'));
+let expanded = null;
+let activePhase = 'all';
+let searchQ = '';
+
+function save() { try { localStorage.setItem('sol_done', JSON.stringify([...done])); } catch(e){} }
+
+function renderStats() {
+  const total = LEVELS.length;
+  const comp = done.size;
+  document.getElementById('prog').style.width = Math.round(comp/total*100)+'%';
+  const phaseCounts = PHASES.map((_,i) => LEVELS.filter(l=>l.phase===i).length);
+  const phaseDone = PHASES.map((_,i) => LEVELS.filter(l=>l.phase===i && done.has(l.id)).length);
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-card"><div class="num">${comp}</div><div class="lbl">Completed</div></div>
+    <div class="stat-card"><div class="num">${total - comp}</div><div class="lbl">Remaining</div></div>
+    <div class="stat-card"><div class="num">${Math.round(comp/total*100)}%</div><div class="lbl">Progress</div></div>
+    <div class="stat-card"><div class="num">${PHASES.length}</div><div class="lbl">Phases</div></div>
+  `;
+}
+
+function renderLevels() {
+  const el = document.getElementById('levels');
+  const filtered = LEVELS.filter(l => {
+    const phaseMatch = activePhase === 'all' || l.phase === parseInt(activePhase);
+    const q = searchQ.toLowerCase();
+    const textMatch = !q || l.title.toLowerCase().includes(q) || l.sub.toLowerCase().includes(q) || (l.skills||[]).some(s=>s.toLowerCase().includes(q));
+    return phaseMatch && textMatch;
+  });
+
+  let html = '';
+  let lastPhase = -1;
+  filtered.forEach(l => {
+    if (l.phase !== lastPhase) {
+      const p = PHASES[l.phase];
+      html += `<div class="section-header"><span class="phase-dot" style="background:${p.dot}"></span>${p.name}</div>`;
+      lastPhase = l.phase;
+    }
+    const p = PHASES[l.phase];
+    const isDone = done.has(l.id);
+    const isExp = expanded === l.id;
+    html += `<div class="level-card${isDone?' done':''}${isExp?' expanded':''}" data-id="${l.id}">
+      <div class="checkbox${isDone?' checked':''}" data-chk="${l.id}">${isDone?'✓':''}</div>
+      <div class="level-main">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span class="level-num" style="background:${p.bg};color:${p.text}">L${l.id}</span>
+          <span class="level-title">${l.title}</span>
+        </div>
+        <div class="level-sub">${l.sub}</div>
+        <div class="level-detail${isExp?' open':''}">
+          <div class="detail-section">
+            <div class="ds-title">What you'll learn</div>
+            <ul>${(l.skills||[]).map(s=>`<li>${s}</li>`).join('')}</ul>
+          </div>
+          <div class="detail-section">
+            <div class="ds-title">Resources</div>
+            <ul>${(l.resources||[]).map(r=>`<li>${r}</li>`).join('')}</ul>
+          </div>
+          <button class="ask-btn" data-ask="${l.id}">Ask Claude about Level ${l.id} ↗</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  el.innerHTML = html || '<div style="color:var(--color-text-secondary);font-size:14px;padding:1rem 0;">No levels match your search.</div>';
+}
+
+document.getElementById('levels').addEventListener('click', e => {
+  const chk = e.target.closest('[data-chk]');
+  if (chk) {
+    const id = parseInt(chk.dataset.chk);
+    if (done.has(id)) done.delete(id); else done.add(id);
+    save(); renderStats(); renderLevels(); return;
+  }
+  const ask = e.target.closest('[data-ask]');
+  if (ask) {
+    const id = parseInt(ask.dataset.ask);
+    const l = LEVELS[id];
+    sendPrompt(`Teach me Level ${id}: "${l.title}" — give me a structured study plan, key concepts, code examples, and mini-project ideas for this level.`);
+    return;
+  }
+  const card = e.target.closest('[data-id]');
+  if (card) {
+    const id = parseInt(card.dataset.id);
+    expanded = (expanded === id) ? null : id;
+    renderLevels();
+  }
+});
+
+document.querySelector('.filter-row').addEventListener('click', e => {
+  const btn = e.target.closest('.phase-btn');
+  if (!btn) return;
+  document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activePhase = btn.dataset.phase;
+  renderLevels();
+});
+
+document.getElementById('search').addEventListener('input', e => {
+  searchQ = e.target.value;
+  renderLevels();
+});
+
+renderStats();
+renderLevels();
+</script>
