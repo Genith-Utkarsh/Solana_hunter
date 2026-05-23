@@ -20,7 +20,7 @@ A gamified, responsive, and gorgeous RPG-style MERN website based on the "Solana
    Create a `.env` file in the `/backend` directory:
    ```env
    PORT=5000
-   MONGODB_URI=mongodb+srv://buvautkarsh849:wXMMIfWA6J6CEVA8@cluster0.g427upx.mongodb.net/solana-hunter?retryWrites=true&w=majority
+   MONGODB_URI=your_mongo_uri
    JWT_SECRET=your_jwt_secret_here
    GEMINI_API_KEY=your_gemini_api_key_here (optional, unlocks dynamic guides)
    ```
@@ -74,7 +74,7 @@ The codebase is structured to build the React application into static assets and
    ```
    This runs `node server.js` from the backend, serving static frontends on port 5000 (or `process.env.PORT`).
 4. **Define Env Variables** in the hosting dashboard:
-   - `MONGODB_URI` = `mongodb+srv://buvautkarsh849:wXMMIfWA6J6CEVA8@cluster0.g427upx.mongodb.net/solana-hunter?retryWrites=true&w=majority`
+   - `MONGODB_URI` = `your mongo url`
    - `JWT_SECRET` = (any long random string)
    - `NODE_ENV` = `production`
    - `GEMINI_API_KEY` = (your Gemini key, optional)
